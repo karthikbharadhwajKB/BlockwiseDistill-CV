@@ -1,0 +1,5 @@
+project: blockwise-distill-cv
+wandb_entity: karthikbharadhwajkb98
+batch_size: 32 
+num_epochs: 10 
+seed: 42

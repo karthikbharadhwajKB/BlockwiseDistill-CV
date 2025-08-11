@@ -25,26 +25,28 @@ class StudentModel(nn.Module):
       # Define the first block of the student model
       # This block consists of a convolutional layer, ReLU activation, and max pooling
       self.block1 = nn.Sequential(
-         nn.Conv2d(1, 8, kernel_size=3, stride=1, padding=1),
+         nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3),
+         nn.BatchNorm2d(64),
          nn.ReLU(),
-         nn.MaxPool2d(kernel_size=2, stride=2)
+         nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
       )
       # Define the second block of the student model
       # This block consists of a convolutional layer, ReLU activation, and max pooling
       self.block2 = nn.Sequential(
-        nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1),
+        nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+        nn.BatchNorm2d(64),
         nn.ReLU(),
-        nn.MaxPool2d(kernel_size=2, stride=2)
+        nn.AdaptiveAvgPool2d((7, 7))  # Adaptive pooling to ensure output size is fixed
       )
       # Define the third block of the student model
       # FC layers are used for classification
       # The final output layer has 10 units for 10 classes
-      self.fc = nn.Linear(16*5*5, 10)  
+      self.fc = nn.Linear(64*7*7, 10)  
 
    def forward(self, x):
       # Forward pass through the student model
-      x1 = self.block1(x)
-      x2 = self.block2(x1)
+      x1 = self.block1(x) # Output: [batch, 64, 7, 7]
+      x2 = self.block2(x1) # Output: [batch, 64, 7, 7]
       # Flatten the output from the second block
       x3 = x2.view(x2.size(0), -1)  # Flatten the tensor
       out = self.fc(x3)  # Pass through the fully connected layer

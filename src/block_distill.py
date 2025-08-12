@@ -4,7 +4,20 @@ import torch.nn as nn
 import torch.optim as optim
 import wandb 
 
-def blockwise_distillation(teacher, student, dataloader, device, num_epochs=2): 
+def blockwise_distillation(teacher, student, dataloader, device, num_epochs=2, use_wandb=True):
+    """
+    Perform block-wise distillation from the teacher model to the student model.
+    Args:
+        teacher (nn.Module): The pre-trained teacher model.
+        student (nn.Module): The student model to be trained.
+        dataloader (DataLoader): DataLoader for training data.
+        device (torch.device): Device to run the training on.
+        num_epochs (int): Number of epochs to train each block.
+        use_wandb (bool): Whether to log metrics to WandB.
+        
+    Returns:
+        None
+    """
     teacher.eval()
     mse_loss = nn.MSELoss()
     ce_loss = nn.CrossEntropyLoss() 
@@ -53,7 +66,8 @@ def blockwise_distillation(teacher, student, dataloader, device, num_epochs=2):
             progress_bar.set_postfix({'Loss': f'{loss.item():.4f}'})
 
         avg_loss = running_loss / len(dataloader)
-        wandb.log({"Stage1_Block1_Loss": avg_loss, "Epoch": epoch + 1})
+        if use_wandb:
+            wandb.log({"Stage1_Block1_Loss": avg_loss, "Epoch": epoch + 1})
 
     # Stage-2: Block-2
     # Freeze all parameters except for the second block of the student model
@@ -92,7 +106,8 @@ def blockwise_distillation(teacher, student, dataloader, device, num_epochs=2):
             # Update progress bar with current loss
             progress_bar.set_postfix({'Loss': f'{loss.item():.4f}'})
         avg_loss = running_loss / len(dataloader)
-        wandb.log({"Stage2_Block2_Loss": avg_loss, "Epoch": epoch + 1})
+        if use_wandb:
+            wandb.log({"Stage2_Block2_Loss": avg_loss, "Epoch": epoch + 1})
 
     # Stage-3: Fully Connected Layer (Classifier)
     # Freeze all parameters except for the fully connected layer of the student model
@@ -124,4 +139,5 @@ def blockwise_distillation(teacher, student, dataloader, device, num_epochs=2):
             # Update progress bar with current loss
             progress_bar.set_postfix({'Loss': f'{loss.item():.4f}'})
         avg_loss = running_loss / len(dataloader)
-        wandb.log({"Stage3_Classification_Loss": avg_loss, "Epoch": epoch + 1})
+        if use_wandb:
+            wandb.log({"Stage3_Classification_Loss": avg_loss, "Epoch": epoch + 1})

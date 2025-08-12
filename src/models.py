@@ -14,6 +14,8 @@ def get_teacher_model(pretrained=True):
    # Modify the first convolutional layer to accept single-channel input
    # This is useful for grayscale images or other single-channel data 
    resnet_model.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
+   # Reinitialize the new conv1 layer properly
+   nn.init.kaiming_normal_(resnet_model.conv1.weight, mode='fan_out', nonlinearity='relu')
    # Replace the final fully connected layer to output 10 classes
    resnet_model.fc = nn.Linear(resnet_model.fc.in_features, 10)
    return resnet_model
